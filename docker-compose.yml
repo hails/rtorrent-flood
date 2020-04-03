@@ -1,0 +1,14 @@
+version: '3.4'
+services:
+  rtorrent:
+    build: ./rtorrent
+
+  flood:
+    build: ./flood
+    environment:
+      RTORRENT_SCGI_HOST: rtorrent
+      FLOOD_SECRET: superstrongsekret
+    ports:
+      - 3000:3000
+    depends_on:
+      - rtorrent
