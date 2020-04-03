@@ -1,0 +1,34 @@
+method.insert = cfg.basedir,  private|const|string, (cat,"/rtorrent/")
+method.insert = cfg.download, private|const|string, (cat,(cfg.basedir),"download/")
+method.insert = cfg.logs,     private|const|string, (cat,(cfg.basedir),"log/")
+method.insert = cfg.logfile,  private|const|string, (cat,(cfg.logs),"rtorrent-",(system.time),".log")
+method.insert = cfg.session,  private|const|string, (cat,(cfg.basedir),".session/")
+method.insert = cfg.watch,    private|const|string, (cat,(cfg.basedir),"watch/")
+
+execute.throw = sh, -c, (cat,\
+    "mkdir -p \"",(cfg.download),"\" ",\
+    "\"",(cfg.logs),"\" ",\
+    "\"",(cfg.session),"\" ",\
+    "\"",(cfg.watch),"/load\" ",\
+    "\"",(cfg.watch),"/start\" ")
+
+session.path.set = (cat, (cfg.session))
+directory.default.set = (cat, (cfg.download))
+log.execute = (cat, (cfg.logs), "execute.log")
+#log.xmlrpc = (cat, (cfg.logs), "xmlrpc.log")
+execute.nothrow = sh, -c, (cat, "echo >",\
+    (session.path), "rtorrent.pid", " ",(system.pid))
+
+## Watch directories (add more as you like, but use unique schedule names)
+## Add torrent
+schedule2 = watch_load, 11, 10, ((load.verbose, (cat, (cfg.watch), "load/*.torrent")))
+## Add & download straight away
+schedule2 = watch_start, 10, 10, ((load.start_verbose, (cat, (cfg.watch), "start/*.torrent")))
+
+print = (cat, "Logging to ", (cfg.logfile))
+log.open_file = "log", (cfg.logfile)
+log.add_output = "info", "log"
+
+system.daemon.set = true
+encoding.add = UTF-8
+network.scgi.open_port = 0.0.0.0:5000
